@@ -13,12 +13,15 @@
     "debug-level": "^0.2.1",
     "express": "~4.16.0",
     "express-session": "^1.15.6",
+    "express-winston": "^2.5.1",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
     "morgan": "~1.9.0",
     "passport": "0.2.0",
     "passport-google-oauth2": "^0.1.6",
     "pg-promise": "^5.9.7",
-    "util": "^0.10.3"
+    "util": "^0.10.3",
+    "winston": "^2.4.2",
+    "winston-logstash": "^0.4.0"
   }
 }

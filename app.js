@@ -9,6 +9,21 @@ var logger = require('morgan');
 var auth = require('./config/auth.js');
 var passport = require('passport')
 var session = require('express-session')
+var winston=require('winston');
+require('winston-logstash');
+expressWinston = require('express-winston');
+
+// var logger = new (winston.Logger)({
+//   transports: [
+       // new (winston.transports.Logstash)({
+       //     port: 10514,
+       //     host: 'logstash',
+       //     max_connect_retries: -1,
+       //     node_name: 'nodejs',
+       // })
+//   ]
+// });
+
 var indexRouter = require('./routes/index');
 var app = express();
 app.listen(4000);
@@ -18,6 +33,34 @@ app.use(session({
   secret: 'keyboard mouse',
   resave: false,
   saveUninitialized: false
+}));
+
+app.use(expressWinston.logger({
+  transports: [
+    new (winston.transports.Logstash)({
+        port: 10514,
+        host: 'logstash',
+        max_connect_retries: -1,
+        node_name: 'nodejs',
+    })
+  ],
+  meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+  msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+  expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+  colorize: false, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+  ignoreRoute: function (req, res) { return false; }, // optional: allows to skip some log messages based on request and/or response
+  dynamicMeta: function(req, res) { return [Object]; }
+}));
+
+app.use(expressWinston.errorLogger({
+  transports: [
+    new (winston.transports.Logstash)({
+        port: 10514,
+        host: 'logstash',
+        max_connect_retries: -1,
+        node_name: 'nodejs',
+    })
+  ]
 }));
 
 app.use(function(req, res, next) {
@@ -41,7 +84,7 @@ app.use(passport.session());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev'));
+// app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
